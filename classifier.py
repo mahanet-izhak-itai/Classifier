@@ -4,7 +4,7 @@ import numpy
 import cv2
 
 def detect(img):
-    cascade = cv2.CascadeClassifier("classifier/cascade.xml")
+    cascade = cv2.CascadeClassifier("output/cascade.xml")
     rects = cascade.detectMultiScale(img, 1.3, 4, cv2.cv.CV_HAAR_SCALE_IMAGE, (20,20))
 
     if len(rects) == 0:
@@ -15,7 +15,6 @@ def detect(img):
 def box(rects, img):
     for x1, y1, x2, y2 in rects:
         cv2.rectangle(img, (x1, y1), (x2, y2), (127, 255, 0), 2)
-    #cv2.imwrite('one.jpg', img);
 
 cap = cv2.VideoCapture(0)
 cap.set(3,400)
