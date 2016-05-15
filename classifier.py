@@ -4,7 +4,6 @@ import numpy as np
 import cv2
 from scipy.ndimage import gaussian_filter1d, filters
 
-# buf = np.array([])
 buf = []
 THRESHOLD = 100
 
