@@ -1,9 +1,46 @@
 #opens up a webcam feed so you can then test your classifer in real time
 #using detectMultiScale
-import numpy
+import numpy as np
 import cv2
+from scipy.ndimage import gaussian_filter1d
 
+# buf = np.array([])
 buf = []
+THRESHOLD = 100
+over_thresh_counter = 0
+
+def smooth_line(line):
+    arr = np.array(line)
+
+    print '---------------'
+    print arr
+    x, y = arr.T
+    print x, y
+    t = np.linspace(0, 1, len(x))
+    t2 = np.linspace(0, 1, 100)
+
+    x2 = np.interp(t2, t, x)
+    y2 = np.interp(t2, t, y)
+    sigma = 10
+    x3 = gaussian_filter1d(x2, sigma)
+    y3 = gaussian_filter1d(y2, sigma)
+
+    x4 = np.interp(t, t2, x3)
+    y4 = np.interp(t, t2, y3)
+
+    x4 = x4.astype(int)
+    y4 = y4.astype(int)
+
+    return np.array([x4, y4]).T
+
+def distance(v1, v2):
+    return np.sqrt(np.sum((v1 - v2) ** 2))
+
+def list_distance(v1, v2):
+    return distance(np.array(v1), np.array(v2))
+
+def smooth_movement(path):
+    return list(smooth_line(np.array(path)))
 
 def detect(img):
     cascade = cv2.CascadeClassifier("output/cascade.xml")
@@ -16,11 +53,31 @@ def detect(img):
 
 def box(rects, img):
     global buf
+    global over_thresh_counter
     for x1, y1, x2, y2 in rects:
         cv2.rectangle(img, (x1, y1), (x2, y2), (127, 255, 0), 2)
-        buf.append([(x1 + x2) / 2, (y1 + y2) / 2])
-    if 10 < len(buf):
-        buf = buf[-10:]
+        center = [(x1 + x2) / 2, (y1 + y2) / 2]
+        if 0 < len(buf):
+            last = buf[-1]
+        else:
+            last = center
+
+        print list_distance(center, last)
+        if THRESHOLD > list_distance(center, last) or 3 < over_thresh_counter:
+            buf.append(center)
+            over_thresh_counter = 0
+        else:
+            over_thresh_counter += 1
+            # buf = np.array(list(buf).append(center))
+            # buf = np.vstack((buf, center))
+
+    # print buf
+    if 20 < len(buf):
+        buf = smooth_movement(buf)
+    # print buf
+
+    if 20 < len(buf):
+        buf = buf[-20:]
     for point in buf:
         cv2.circle(img,(point[0],point[1]), 5, (0,0,255), -1)
 
