@@ -50,7 +50,6 @@ def detect(img):
 
 def box(rects, img):
     global buf
-    global over_thresh_counter
     for x1, y1, x2, y2 in rects:
         cv2.rectangle(img, (x1, y1), (x2, y2), (127, 255, 0), 2)
         center = [(x1 + x2) / 2, (y1 + y2) / 2]
