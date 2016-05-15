@@ -2,20 +2,16 @@
 #using detectMultiScale
 import numpy as np
 import cv2
-from scipy.ndimage import gaussian_filter1d
+from scipy.ndimage import gaussian_filter1d, filters
 
 # buf = np.array([])
 buf = []
 THRESHOLD = 100
-over_thresh_counter = 0
 
 def smooth_line(line):
     arr = np.array(line)
 
-    print '---------------'
-    print arr
     x, y = arr.T
-    print x, y
     t = np.linspace(0, 1, len(x))
     t2 = np.linspace(0, 1, 100)
 
@@ -40,6 +36,7 @@ def list_distance(v1, v2):
     return distance(np.array(v1), np.array(v2))
 
 def smooth_movement(path):
+    new_path = filters.median_filter(path, 2)
     return list(smooth_line(np.array(path)))
 
 def detect(img):
@@ -57,24 +54,10 @@ def box(rects, img):
     for x1, y1, x2, y2 in rects:
         cv2.rectangle(img, (x1, y1), (x2, y2), (127, 255, 0), 2)
         center = [(x1 + x2) / 2, (y1 + y2) / 2]
-        if 0 < len(buf):
-            last = buf[-1]
-        else:
-            last = center
+        buf.append(center)
 
-        print list_distance(center, last)
-        if THRESHOLD > list_distance(center, last) or 3 < over_thresh_counter:
-            buf.append(center)
-            over_thresh_counter = 0
-        else:
-            over_thresh_counter += 1
-            # buf = np.array(list(buf).append(center))
-            # buf = np.vstack((buf, center))
-
-    # print buf
     if 20 < len(buf):
         buf = smooth_movement(buf)
-    # print buf
 
     if 20 < len(buf):
         buf = buf[-20:]
