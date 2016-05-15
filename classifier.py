@@ -51,7 +51,7 @@ def detect(img):
 def box(rects, img):
     global buf
     for x1, y1, x2, y2 in rects:
-        cv2.rectangle(img, (x1, y1), (x2, y2), (127, 255, 0), 2)
+        # cv2.rectangle(img, (x1, y1), (x2, y2), (127, 255, 0), 2)
         center = [(x1 + x2) / 2, (y1 + y2) / 2]
         buf.append(center)
 
@@ -60,9 +60,13 @@ def box(rects, img):
 
     if 20 < len(buf):
         buf = buf[-20:]
-    for point in buf:
-        cv2.circle(img,(point[0],point[1]), 5, (0,0,255), -1)
 
+    new_img = np.zeros((400, 300, 3), np.uint8)
+
+    for point in buf:
+        cv2.circle(new_img,(point[0],point[1]), 8, (255, 255 ,255), -1)
+
+    return new_img
 
 cap = cv2.VideoCapture(0)
 cap.set(3,400)
@@ -72,7 +76,7 @@ while(True):
     ret, img = cap.read()
     img = cv2.flip(img, 1)
     rects, img = detect(img)
-    box(rects, img)
+    img = box(rects, img)
     cv2.imshow("frame", img)
     if(cv2.waitKey(1) & 0xFF == ord('q')):
         break
